@@ -1,0 +1,3 @@
+Ncurses program for checking answers during prepare for driver license exam
+
+usage: ./pcl.rb
