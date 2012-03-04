@@ -3,7 +3,7 @@ require 'pddchecklist'
 describe Bilet do
   before(:each) do
     @no = rand(5)+1
-    @bilet = Bilet.new(@no)
+    @bilet = Bilet.new(@no, (1..20).map{ rand(5)+1 })
   end
   it "should got number" do
     @bilet.no.should == @no
@@ -19,6 +19,7 @@ describe Bilet do
   end
   it "should return false if even one question is unanswered" do
     @bilet.questions[5] = Question.new(5, 2)
+    @bilet.questions[5].answer(2)
     @bilet.questions[5].checked?.should be_true
     @bilet.answered?.should be_false
   end

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 $KCODE='u'
-require "pddchecklist"
+require "./pddchecklist"
 require "ncurses"
 STORE_FILE = File.join(File.expand_path(File.dirname(__FILE__)), 'pdd.yml')
 
@@ -29,8 +29,8 @@ class NcursesInterface
     print_book(@book)
     @window.move @lines, 0
     @window.addstr "Bilet: #{@cb} Question: #{@cq} >> "
+    @window.mvaddstr @lines, 27, ' '
     @window.move @lines, 26
-    #@window.refresh
   end
 
   def print_book(book) 
@@ -52,10 +52,16 @@ class NcursesInterface
   def print_question(question, bilet)
     answer = question.answer
     answer = '-' if answer.nil?
-    answer = (' ' << answer) if @cb < 10
-    @window.attrset(Ncurses.COLOR_PAIR(3)) if bilet.no == @cb.to_i && question.no == @cq.to_i
-    @window.addstr(answer)
-    @window.attrset(Ncurses.COLOR_PAIR(1)) if bilet.no == @cb.to_i
+    answer = answer.to_s.ljust(1) if @cb < 10
+    if (bilet.no == @cb.to_i && question.no == @cq.to_i) || question.answer_wrong?
+      @window.attrset(Ncurses.COLOR_PAIR(3)) 
+    end
+    @window.addstr(answer.to_s)
+    if bilet.no == @cb.to_i
+      @window.attrset(Ncurses.COLOR_PAIR(1)) 
+    else
+      @window.attrset(Ncurses.COLOR_PAIR(2)) 
+    end
   end
 
   def current_position
@@ -82,7 +88,7 @@ class NcursesInterface
       ch = @window.getch
       break if ch == ?q
       next unless (?1..?9).include?(ch)
-      @book.current_bilet.current_question.answer(ch)
+      @book.current_bilet.current_question.answer(ch.chr.to_i)
       @window.refresh
     end
 

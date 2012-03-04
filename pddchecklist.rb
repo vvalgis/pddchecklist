@@ -4,9 +4,9 @@ require "ap"
 
 class Question
   attr_reader :no
-  def initialize(no, answer = nil)
+  def initialize(no, answer)
     @no = no
-    @answer = answer
+    @correct_answer = answer
   end
   def answer(point = nil)
     if point.nil?
@@ -18,14 +18,20 @@ class Question
   def checked?
     @answer.nil? ? false : true
   end
+  def answer_correct?
+    @correct_answer == @answer
+  end
+  def answer_wrong?
+    checked? && !answer_correct?
+  end
 end
 
 class Bilet
   attr_reader :no
   attr_accessor :questions
-  def initialize(no)
+  def initialize(no, answers)
     @no = no
-    @questions = (1..20).map{ |n| Question.new(n) }
+    @questions = answers.each_with_index.map {|a, i| Question.new((i + 1), a) }
   end
   def answered?
     @questions.all? {|q| q.checked? }
@@ -36,9 +42,11 @@ class Bilet
 end
 
 class Book
-  attr_reader :bilets
+  attr_reader :bilets, :correct_answers
   def initialize
-    @bilets = (1..40).map{ |n| Bilet.new(n) }
+    filename = File.join(File.expand_path(File.dirname(__FILE__)), 'answers.yml')
+    @correct_answers = YAML.load_file(filename)
+    @bilets = (1..40).map { |no| Bilet.new(no, @correct_answers[no]) }
   end
   def done?
     @bilets.all? {|b| b.answered? }
